@@ -72,4 +72,4 @@ Resources:
 Outputs:
   ApiUrlSouvik:
     Description: "Base URL for Souvik's API"
-    Value: !Sub 'https://${UrlShortenerApiSouvik}.execute-api.${AWS::Region}.amazonaws.com/prod/'
+    Value: !Sub 'https://${UrlShortenerApiSouvik}.execute-api.${AWS::Region}.amazonaws.com/test/'
