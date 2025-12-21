@@ -21,8 +21,6 @@ export const handler = async (event) => {
       })
     );
 
-    console.log('DynamoDB get result:', resp);
-
     if (!resp.Item) {
       return { statusCode: 404, body: 'URL not found' };
     }

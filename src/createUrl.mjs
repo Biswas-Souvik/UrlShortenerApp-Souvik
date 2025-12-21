@@ -15,9 +15,6 @@ export const handler = async (event) => {
     }
 
     const shortId = crypto.randomBytes(4).toString('hex');
-    console.log('Generated shortId:', shortId);
-    console.log('Original URL to store:', originalUrl);
-    console.log('DynamoDB Table Name:', TABLE_NAME);
 
     await client.send(
       new PutCommand({
