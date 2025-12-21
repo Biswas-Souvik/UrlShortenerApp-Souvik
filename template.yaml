@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: URL Shortener API using AWS SAM
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Timeout: 5
+    MemorySize: 128
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref UrlTableSouvik
+
+Resources:
+  UrlShortenerApiSouvik:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: UrlShortenerApi-souvik
+      StageName: test
+      EndpointConfiguration: REGIONAL
+      Cors:
+        AllowMethods: "'GET,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  UrlTableSouvik:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UrlShortenerTable-souvik
+      AttributeDefinitions:
+        - AttributeName: shortId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: shortId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CreateShortUrlFunctionSouvik:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: createUrl.handler
+      CodeUri: src/
+      FunctionName: CreateShortUrlFunction-souvik
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref UrlTableSouvik
+      Events:
+        CreateEndpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UrlShortenerApiSouvik
+            Path: /get-url-shortner
+            Method: POST
+
+  RedirectFunctionSouvik:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: redirectUrl.handler
+      CodeUri: src/
+      FunctionName: RedirectFunction-souvik
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UrlTableSouvik
+      Events:
+        RedirectEndpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UrlShortenerApiSouvik
+            Path: /short/{shortId}
+            Method: GET
+
+Outputs:
+  ApiUrlSouvik:
+    Description: "Base URL for Souvik's API"
+    Value: !Sub 'https://${UrlShortenerApiSouvik}.execute-api.${AWS::Region}.amazonaws.com/prod/'
