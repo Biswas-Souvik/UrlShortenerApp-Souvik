@@ -1,10 +1,12 @@
+import { RedirectUrlEvent } from './types';
+import { createUrlResponse } from './utils/url.utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 
 const TABLE_NAME = process.env.TABLE_NAME;
 const client = new DynamoDBClient();
 
-export const handler = async (event) => {
+export const handler = async (event: RedirectUrlEvent) => {
   try {
     const shortId = event.pathParameters?.shortId;
 
@@ -26,18 +28,9 @@ export const handler = async (event) => {
     }
 
     const originalUrl = resp.Item.originalUrl;
-    return {
-      statusCode: 302,
-      headers: {
-        Location: originalUrl,
-      },
-      body: '',
-    };
+    return createUrlResponse(302, '', { Location: originalUrl });
   } catch (error) {
     console.error('Error in redirectUrl handler:', error);
-    return {
-      statusCode: 500,
-      body: 'Internal Server Error',
-    };
+    return createUrlResponse(500, 'Internal Server Error');
   }
 };

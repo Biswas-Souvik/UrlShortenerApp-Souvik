@@ -1,3 +1,5 @@
+import { ShortUrlEvent, ShortUrlEventBody } from './types';
+import { createUrlResponse } from './utils/url.utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import crypto from 'crypto';
@@ -5,9 +7,9 @@ import crypto from 'crypto';
 const TABLE_NAME = process.env.TABLE_NAME;
 const client = new DynamoDBClient();
 
-export const handler = async (event) => {
+export const handler = async (event: ShortUrlEvent) => {
   try {
-    const body = JSON.parse(event.body);
+    const body: ShortUrlEventBody = JSON.parse(event.body);
     const originalUrl = body?.url;
 
     if (!originalUrl) {
@@ -29,15 +31,9 @@ export const handler = async (event) => {
     const baseUrl = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
     const shortUrl = `${baseUrl}/short/${shortId}`;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ shortUrl }),
-    };
+    return createUrlResponse(201, JSON.stringify({ shortUrl }));
   } catch (error) {
     console.error('Error creating short URL:', error);
-    return {
-      statusCode: 500,
-      body: 'Internal Server Error',
-    };
+    return createUrlResponse(500, 'Internal Server Error');
   }
 };
