@@ -1,39 +1,26 @@
 import { ShortUrlEvent, ShortUrlEventBody } from './types';
 import { createUrlResponse } from './utils/url.utils';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import crypto from 'crypto';
+import { putItem } from './utils/db.utils';
 
-const TABLE_NAME = process.env.TABLE_NAME;
-const client = new DynamoDBClient();
+import crypto from 'crypto';
 
 export const handler = async (event: ShortUrlEvent) => {
   try {
     const body: ShortUrlEventBody = JSON.parse(event.body);
     const originalUrl = body?.url;
 
-    if (!originalUrl) {
-      return { statusCode: 400, body: 'URL is required' };
-    }
+    if (!originalUrl) return createUrlResponse(400, 'URL is required');
 
     const shortId = crypto.randomBytes(4).toString('hex');
-
-    await client.send(
-      new PutCommand({
-        TableName: TABLE_NAME,
-        Item: {
-          shortId: shortId,
-          originalUrl: originalUrl,
-        },
-      })
-    );
+    const resp = await putItem(shortId, originalUrl);
+    if (!resp) return createUrlResponse(500, 'Failed to store URL mapping');
 
     const baseUrl = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
     const shortUrl = `${baseUrl}/short/${shortId}`;
 
     return createUrlResponse(201, JSON.stringify({ shortUrl }));
   } catch (error) {
-    console.error('Error creating short URL:', error);
+    console.error('Error creating short URL: ', error);
     return createUrlResponse(500, 'Internal Server Error');
   }
 };
