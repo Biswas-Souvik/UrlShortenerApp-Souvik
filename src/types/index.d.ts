@@ -29,3 +29,8 @@ export interface UrlResponse {
   body: string;
   headers?: UrlResponseHeaders;
 }
+
+export interface PutItemResponse {
+  status: 'success' | 'keyAlreadyExists' | 'error';
+  message?: string;
+}

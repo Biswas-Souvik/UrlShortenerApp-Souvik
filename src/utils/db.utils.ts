@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { PutItemResponse } from '../types';
 
 const TABLE_NAME = process.env.TABLE_NAME;
 const client = new DynamoDBClient();
@@ -23,7 +24,10 @@ export const getItem = async (shortId: string) => {
   }
 };
 
-export const putItem = async (shortId: string, originalUrl: string) => {
+export const putItem = async (
+  shortId: string,
+  originalUrl: string
+): Promise<PutItemResponse> => {
   try {
     await client.send(
       new PutCommand({
@@ -32,11 +36,17 @@ export const putItem = async (shortId: string, originalUrl: string) => {
           shortId: shortId,
           originalUrl: originalUrl,
         },
+        // Prevent overwriting an existing shorturl
+        ConditionExpression: 'attribute_not_exists(shortId)',
       })
     );
-    return true;
-  } catch (error) {
+    return { status: 'success' };
+  } catch (error: any) {
+    if (error.name === 'ConditionalCheckFailedException') {
+      // The shortId already exists
+      return { status: 'keyAlreadyExists' };
+    }
     console.error('Error putting item into DynamoDB:', error);
-    return false;
+    return { status: 'error', message: error.message };
   }
 };

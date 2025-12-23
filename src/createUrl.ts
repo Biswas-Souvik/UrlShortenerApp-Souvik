@@ -1,8 +1,11 @@
 import { ShortUrlEvent, ShortUrlEventBody } from './types';
-import { createUrlResponse } from './utils/url.utils';
+import {
+  createUrlResponse,
+  isValidHttpUrl,
+  trimUrl,
+  getUniqueShortId,
+} from './utils/url.utils';
 import { putItem } from './utils/db.utils';
-
-import crypto from 'crypto';
 
 export const handler = async (event: ShortUrlEvent) => {
   try {
@@ -11,9 +14,21 @@ export const handler = async (event: ShortUrlEvent) => {
 
     if (!originalUrl) return createUrlResponse(400, 'URL is required');
 
-    const shortId = crypto.randomBytes(4).toString('hex');
-    const resp = await putItem(shortId, originalUrl);
-    if (!resp) return createUrlResponse(500, 'Failed to store URL mapping');
+    const trimmedUrl = trimUrl(originalUrl);
+
+    if (!isValidHttpUrl(trimmedUrl))
+      return createUrlResponse(400, 'Invalid URL');
+
+    const shortId = getUniqueShortId();
+    let resp = await putItem(shortId, trimmedUrl);
+
+    if (resp.status === 'keyAlreadyExists') {
+      const shortId = getUniqueShortId();
+      resp = await putItem(shortId, trimmedUrl);
+    }
+
+    if (resp.status !== 'success')
+      return createUrlResponse(500, 'Failed to store URL mapping');
 
     const baseUrl = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
     const shortUrl = `${baseUrl}/short/${shortId}`;
