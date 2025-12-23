@@ -34,3 +34,8 @@ export interface PutItemResponse {
   status: 'success' | 'keyAlreadyExists' | 'error';
   message?: string;
 }
+
+export interface GetByOriginalUrlResponse {
+  error: boolean;
+  item: Record<string, any> | null;
+}

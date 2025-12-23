@@ -10,6 +10,7 @@ Globals:
     Environment:
       Variables:
         TABLE_NAME: !Ref UrlTableSouvik
+        ORIGINAL_URL_INDEX: 'OriginalUrlIndex'
 
 Resources:
   UrlShortenerApiSouvik:
@@ -17,7 +18,8 @@ Resources:
     Properties:
       Name: UrlShortenerApi-souvik
       StageName: test
-      EndpointConfiguration: REGIONAL
+      EndpointConfiguration:
+        Type: REGIONAL
       Cors:
         AllowMethods: "'GET,POST'"
         AllowHeaders: "'Content-Type'"
@@ -27,13 +29,22 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: UrlTableSouvik
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: shortId
+          AttributeType: S
+        - AttributeName: originalUrl
           AttributeType: S
       KeySchema:
         - AttributeName: shortId
           KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: OriginalUrlIndex
+          KeySchema:
+            - AttributeName: originalUrl
+              KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
 
   CreateShortUrlFunctionSouvik:
     Type: AWS::Serverless::Function
@@ -53,6 +64,7 @@ Resources:
             Method: POST
     Metadata:
       BuildMethod: nodejs16.x
+
   RedirectFunctionSouvik:
     Type: AWS::Serverless::Function
     Properties:

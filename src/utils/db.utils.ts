@@ -1,7 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { PutItemResponse } from '../types';
+import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { PutItemResponse, GetByOriginalUrlResponse } from '../types';
 
+const ORIGINAL_URL_INDEX = process.env.ORIGINAL_URL_INDEX;
 const TABLE_NAME = process.env.TABLE_NAME;
 const client = new DynamoDBClient();
 
@@ -48,5 +49,28 @@ export const putItem = async (
     }
     console.error('Error putting item into DynamoDB:', error);
     return { status: 'error', message: error.message };
+  }
+};
+
+export const getByOriginalUrl = async (
+  originalUrl: string
+): Promise<GetByOriginalUrlResponse> => {
+  try {
+    const response = await client.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        IndexName: ORIGINAL_URL_INDEX,
+        KeyConditionExpression: 'originalUrl = :url',
+        ExpressionAttributeValues: {
+          ':url': originalUrl,
+        },
+        Limit: 1, // we only expect at most one shortId per original URL
+      })
+    );
+
+    return { error: false, item: response.Items?.[0] ?? null };
+  } catch (error) {
+    console.error('Error querying by originalUrl:', error);
+    return { error: true, item: null };
   }
 };
