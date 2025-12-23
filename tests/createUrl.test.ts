@@ -5,9 +5,6 @@ import * as url from '../src/utils/url.utils';
 jest.mock('../src/utils/db.utils');
 const mockedDb = jest.mocked(db);
 
-jest.mock('../src/utils/url.utils');
-const mockedUrl = jest.mocked(url);
-
 describe('createUrl.handler', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -42,7 +39,7 @@ describe('createUrl.handler', () => {
       item: null,
     });
 
-    mockedUrl.getUniqueShortId.mockReturnValue('id123');
+    jest.spyOn(url, 'getUniqueShortId').mockReturnValue('id123');
     mockedDb.putItem.mockResolvedValueOnce({ status: 'success' });
 
     const res = await handler(baseEvent);
@@ -79,7 +76,7 @@ describe('createUrl.handler', () => {
       item: null,
     });
 
-    mockedUrl.getUniqueShortId.mockReturnValue('id123');
+    jest.spyOn(url, 'getUniqueShortId').mockReturnValue('id123');
     mockedDb.putItem.mockResolvedValueOnce({ status: 'error' });
 
     const res = await handler(baseEvent);
