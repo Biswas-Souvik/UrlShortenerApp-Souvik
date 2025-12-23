@@ -2,11 +2,16 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { PutItemResponse, GetByOriginalUrlResponse } from '../types';
 
-const ORIGINAL_URL_INDEX = process.env.ORIGINAL_URL_INDEX;
-const TABLE_NAME = process.env.TABLE_NAME;
+const ORIGINAL_URL_INDEX = process.env.ORIGINAL_URL_INDEX!;
+const TABLE_NAME = process.env.TABLE_NAME!;
 const client = new DynamoDBClient();
 
-console.log('DynamoDB Table Name:', TABLE_NAME);
+console.log(
+  'Connected to DB - Table:',
+  TABLE_NAME,
+  'Index:',
+  ORIGINAL_URL_INDEX
+);
 
 export const getItem = async (shortId: string) => {
   try {

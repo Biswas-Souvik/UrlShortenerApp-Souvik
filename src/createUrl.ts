@@ -28,7 +28,10 @@ export const handler = async (event: ShortUrlEvent) => {
       trimmedUrl
     );
 
-    if (!existingEntry.error && existingEntry.item) {
+    if (existingEntry.error)
+      return createUrlResponse(500, 'Failed to check existing URL');
+
+    if (existingEntry.item) {
       const shortUrl = `${baseUrl}/short/${existingEntry.item.shortId}`;
       return createUrlResponse(200, JSON.stringify({ shortUrl }));
     }

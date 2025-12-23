@@ -1,10 +1,11 @@
-import { putItem, getItem } from '../src/utils/db.utils';
+import { putItem, getItem, getByOriginalUrl } from '../src/utils/db.utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
 jest.mock('@aws-sdk/client-dynamodb');
 jest.mock('@aws-sdk/lib-dynamodb', () => ({
   GetCommand: jest.fn(),
   PutCommand: jest.fn(),
+  QueryCommand: jest.fn(),
 }));
 
 describe('db.utils', () => {
@@ -54,5 +55,22 @@ describe('db.utils', () => {
 
     const res = await getItem('abc');
     expect(res.Item).toBe(null);
+  });
+
+  test('getByOriginalUrl returns item on success', async () => {
+    mockSend.mockResolvedValueOnce({
+      Items: [{ shortId: 'abc', originalUrl: 'https://google.com' }],
+    });
+
+    const res = await getByOriginalUrl('https://google.com');
+    expect(res.error).toBe(false);
+    expect(res.item).not.toBeNull();
+    expect(res.item?.shortId).toBe('abc');
+  });
+  test('getByOriginalUrl handles errors', async () => {
+    mockSend.mockRejectedValueOnce(new Error('Dynamo fail'));
+    const res = await getByOriginalUrl('https://google.com');
+    expect(res.error).toBe(true);
+    expect(res.item).toBe(null);
   });
 });
