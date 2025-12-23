@@ -2,6 +2,7 @@ import { handler } from '../src/redirectUrl';
 import * as db from '../src/utils/db.utils';
 
 jest.mock('../src/utils/db.utils');
+const mockedDb = jest.mocked(db);
 
 describe('redirectUrl.handler', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -12,27 +13,27 @@ describe('redirectUrl.handler', () => {
   });
 
   test('returns 404 if item not found', async () => {
-    (db.getItem as jest.Mock).mockResolvedValueOnce({ Item: null });
+    mockedDb.getItem.mockResolvedValueOnce({ Item: null, message: '' });
 
-    const res = await handler({ pathParameters: { shortId: 'abc' } } as any);
+    const res = await handler({ pathParameters: { shortId: 'abc' } });
     expect(res.statusCode).toBe(404);
   });
 
   test('returns 302 and Location header', async () => {
-    (db.getItem as jest.Mock).mockResolvedValueOnce({
+    mockedDb.getItem.mockResolvedValueOnce({
       Item: { originalUrl: 'https://google.com' },
-    });
+    } as any);
 
-    const res = await handler({ pathParameters: { shortId: 'abc' } } as any);
+    const res = await handler({ pathParameters: { shortId: 'abc' } });
 
     expect(res.statusCode).toBe(302);
     expect(res.headers?.Location).toBe('https://google.com');
   });
 
   test('returns 500 on error', async () => {
-    (db.getItem as jest.Mock).mockRejectedValueOnce(new Error('fail'));
+    mockedDb.getItem.mockRejectedValueOnce(new Error('fail'));
 
-    const res = await handler({ pathParameters: { shortId: 'abc' } } as any);
+    const res = await handler({ pathParameters: { shortId: 'abc' } });
     expect(res.statusCode).toBe(500);
   });
 });

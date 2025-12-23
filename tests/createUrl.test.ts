@@ -1,8 +1,12 @@
 import { handler } from '../src/createUrl';
 import * as db from '../src/utils/db.utils';
-import * as utils from '../src/utils/url.utils';
+import * as url from '../src/utils/url.utils';
 
 jest.mock('../src/utils/db.utils');
+const mockedDb = jest.mocked(db);
+
+jest.mock('../src/utils/url.utils');
+const mockedUrl = jest.mocked(url);
 
 describe('createUrl.handler', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -17,7 +21,7 @@ describe('createUrl.handler', () => {
 
   test('returns 400 if URL is missing', async () => {
     const event = { ...baseEvent, body: JSON.stringify({}) };
-    const res = await handler(event as any);
+    const res = await handler(event);
     expect(res.statusCode).toBe(400);
     expect(res.body).toContain('URL is required');
   });
@@ -27,21 +31,21 @@ describe('createUrl.handler', () => {
       ...baseEvent,
       body: JSON.stringify({ url: 'invalid-text' }),
     };
-    const res = await handler(event as any);
+    const res = await handler(event);
     expect(res.statusCode).toBe(400);
     expect(res.body).toContain('Invalid URL');
   });
 
   test('stores URL and returns short URL if original URL does not exist', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
-      error: null,
+    mockedDb.getByOriginalUrl.mockResolvedValue({
+      error: false,
       item: null,
     });
 
-    jest.spyOn(utils, 'getUniqueShortId').mockReturnValue('id123');
-    (db.putItem as jest.Mock).mockResolvedValueOnce({ status: 'success' });
+    mockedUrl.getUniqueShortId.mockReturnValue('id123');
+    mockedDb.putItem.mockResolvedValueOnce({ status: 'success' });
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
     const body = JSON.parse(res.body);
 
     expect(res.statusCode).toBe(201);
@@ -49,61 +53,61 @@ describe('createUrl.handler', () => {
   });
 
   test('retries when shortId already exists', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
-      error: null,
+    mockedDb.getByOriginalUrl.mockResolvedValue({
+      error: false,
       item: null,
     });
 
     jest
-      .spyOn(utils, 'getUniqueShortId')
+      .spyOn(url, 'getUniqueShortId')
       .mockReturnValueOnce('id1')
       .mockReturnValueOnce('id2');
 
-    (db.putItem as jest.Mock)
+    mockedDb.putItem
       .mockResolvedValueOnce({ status: 'keyAlreadyExists' })
       .mockResolvedValueOnce({ status: 'success' });
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
 
     expect(db.putItem).toHaveBeenCalledTimes(2);
     expect(res.statusCode).toBe(201);
   });
 
   test('returns 500 when storing fails', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
-      error: null,
+    mockedDb.getByOriginalUrl.mockResolvedValue({
+      error: false,
       item: null,
     });
 
-    jest.spyOn(utils, 'getUniqueShortId').mockReturnValue('id123');
-    (db.putItem as jest.Mock).mockResolvedValueOnce({ status: 'error' });
+    mockedUrl.getUniqueShortId.mockReturnValue('id123');
+    mockedDb.putItem.mockResolvedValueOnce({ status: 'error' });
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
     expect(res.statusCode).toBe(500);
   });
 
   test('returns 500 when putItem throws', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
-      error: null,
+    mockedDb.getByOriginalUrl.mockResolvedValue({
+      error: false,
       item: null,
     });
 
-    (db.putItem as jest.Mock).mockRejectedValueOnce(new Error('fail'));
+    mockedDb.putItem.mockRejectedValueOnce(new Error('fail'));
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
     expect(res.statusCode).toBe(500);
     expect(res.body).toContain('Internal Server Error');
   });
 
   test('returns existing short URL if original URL already exists', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
-      error: null,
+    mockedDb.getByOriginalUrl.mockResolvedValue({
+      error: false,
       item: {
         shortId: 'existing123',
       },
     });
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
     const body = JSON.parse(res.body);
 
     expect(res.statusCode).toBe(200);
@@ -111,12 +115,12 @@ describe('createUrl.handler', () => {
   });
 
   test('returns 503 if error occurs checking existing URL', async () => {
-    (db.getByOriginalUrl as jest.Mock).mockResolvedValue({
+    mockedDb.getByOriginalUrl.mockResolvedValue({
       error: true,
       item: null,
     });
 
-    const res = await handler(baseEvent as any);
+    const res = await handler(baseEvent);
     expect(res.statusCode).toBe(500);
     expect(res.body).toContain('Failed to check existing URL');
   });
