@@ -53,6 +53,8 @@ Resources:
       CodeUri: dist/
       FunctionName: CreateShortUrlFunction-souvik
       Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UrlTableSouvik
         - DynamoDBWritePolicy:
             TableName: !Ref UrlTableSouvik
       Events:
