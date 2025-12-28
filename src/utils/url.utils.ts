@@ -1,7 +1,5 @@
 import { UrlResponse, UrlResponseHeaders } from '../types';
-import crypto from 'crypto';
-
-const SHORT_ID_BYTE_SIZE = 8;
+import { ShortIdStrategyFactory } from './shortId.utils';
 
 export const trimUrl = (url: string): string => {
   // the regex "/\/+$/" removes trailing slashes,
@@ -21,8 +19,8 @@ export const isValidHttpUrl = (urlString: string): boolean => {
 };
 
 export const getUniqueShortId = (): string => {
-  const shortId = crypto.randomBytes(SHORT_ID_BYTE_SIZE).toString('hex');
-  return shortId;
+  const strategy = ShortIdStrategyFactory.getStrategy('crypto');
+  return strategy.generate();
 };
 
 export const createUrlResponse = (
