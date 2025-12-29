@@ -39,3 +39,18 @@ export interface GetByOriginalUrlResponse {
   error: boolean;
   item: Record<string, any> | null;
 }
+export interface PolicyStatement {
+  Action: string;
+  Effect: 'Allow' | 'Deny';
+  Resource: string;
+}
+
+export interface PolicyDocument {
+  Version: string;
+  Statement: PolicyStatement[];
+}
+
+export interface Policy {
+  principalId: string;
+  policyDocument: PolicyDocument;
+}
