@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: createUrl.handler
-      CodeUri: dist/
+      CodeUri: ./
       FunctionName: CreateShortUrlFunction-souvik
       Policies:
         - DynamoDBReadPolicy:
@@ -65,13 +65,21 @@ Resources:
             Path: /get-url-shortner
             Method: POST
     Metadata:
-      BuildMethod: nodejs16.x
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        External:
+          - '@aws-sdk/*'
+        EntryPoints:
+          - src/createUrl.ts
 
   RedirectFunctionSouvik:
     Type: AWS::Serverless::Function
     Properties:
       Handler: redirectUrl.handler
-      CodeUri: dist/
+      CodeUri: ./
       FunctionName: RedirectFunction-souvik
       Policies:
         - DynamoDBReadPolicy:
@@ -84,7 +92,15 @@ Resources:
             Path: /short/{shortId}
             Method: GET
     Metadata:
-      BuildMethod: nodejs16.x
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        External:
+          - '@aws-sdk/*'
+        EntryPoints:
+          - src/redirectUrl.ts
 
 Outputs:
   ApiUrlSouvik:
