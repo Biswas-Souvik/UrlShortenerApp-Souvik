@@ -4,18 +4,25 @@ import { PutItemResponse, GetByOriginalUrlResponse } from '../types';
 
 const ORIGINAL_URL_INDEX = process.env.ORIGINAL_URL_INDEX!;
 const TABLE_NAME = process.env.TABLE_NAME!;
-const client = new DynamoDBClient();
 
-console.log(
-  'Connected to DB - Table:',
-  TABLE_NAME,
-  'Index:',
-  ORIGINAL_URL_INDEX
-);
+let client: DynamoDBClient | null = null;
+
+const getClient = (): DynamoDBClient => {
+  if (!client) {
+    client = new DynamoDBClient();
+    console.log(
+      'Connected to DB - Table:',
+      TABLE_NAME,
+      'Index:',
+      ORIGINAL_URL_INDEX
+    );
+  }
+  return client;
+};
 
 export const getItem = async (shortId: string) => {
   try {
-    const resp = await client.send(
+    const resp = await getClient().send(
       new GetCommand({
         TableName: TABLE_NAME,
         Key: {
@@ -35,7 +42,7 @@ export const putItem = async (
   originalUrl: string
 ): Promise<PutItemResponse> => {
   try {
-    await client.send(
+    await getClient().send(
       new PutCommand({
         TableName: TABLE_NAME,
         Item: {
@@ -61,7 +68,7 @@ export const getByOriginalUrl = async (
   originalUrl: string
 ): Promise<GetByOriginalUrlResponse> => {
   try {
-    const response = await client.send(
+    const response = await getClient().send(
       new QueryCommand({
         TableName: TABLE_NAME,
         IndexName: ORIGINAL_URL_INDEX,
