@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install esbuild globally
+        run: npm install -g esbuild
+
       - name: Build project
         run: npm run build
 
