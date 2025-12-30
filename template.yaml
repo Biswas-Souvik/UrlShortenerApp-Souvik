@@ -17,13 +17,17 @@ Parameters:
     Type: String
     NoEcho: true
     Description: Secret key for JWT authorizer
+  EnvName:
+    Type: String
+    Description: 'The Environment Name'
+    Default: development
 
 Resources:
   UrlShortenerApiSouvik:
     Type: AWS::Serverless::Api
     Properties:
       Name: UrlShortenerApi-souvik
-      StageName: test
+      StageName: !Ref EnvName
       Auth:
         DefaultAuthorizer: JwtAuthorizerSouvik
         Authorizers:
