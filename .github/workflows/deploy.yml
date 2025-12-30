@@ -34,6 +34,11 @@ jobs:
             exit 1
           fi
 
+      - name: Debug AWS region
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "AWS_REGION is: $AWS_REGION"
+
       - name: Setup AWS SAM
         uses: aws-actions/setup-sam@v2
 
