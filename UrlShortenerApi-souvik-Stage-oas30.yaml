@@ -1,0 +1,158 @@
+openapi: '3.0.1'
+info:
+  title: 'UrlShortenerApi-souvik'
+  version: '1.0'
+servers:
+  - url: 'https://zsj2kfyqed.execute-api.ap-south-1.amazonaws.com/{basePath}'
+    variables:
+      basePath:
+        default: 'Stage'
+paths:
+  /get-url-shortner:
+    post:
+      summary: Create a shortened URL
+      description: Creates a new shortened URL mapping or returns existing one if the URL already exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+      responses:
+        '200':
+          description: URL already exists - returns existing short URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '201':
+          description: Successfully created new short URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '400':
+          description: Bad request - missing or invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - JwtAuthorizerSouvik: []
+    options:
+      responses:
+        '200':
+          description: '200 response'
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: 'string'
+            Access-Control-Allow-Methods:
+              schema:
+                type: 'string'
+            Access-Control-Allow-Headers:
+              schema:
+                type: 'string'
+          content: {}
+      security:
+        - JwtAuthorizerSouvik: []
+  /short/{shortId}:
+    get:
+      summary: Redirect to original URL
+      description: Redirects to the original URL associated with the provided short ID
+      parameters:
+        - name: 'shortId'
+          in: 'path'
+          required: true
+          schema:
+            type: 'string'
+          description: The unique short identifier
+      responses:
+        '302':
+          description: Redirect to original URL
+          headers:
+            Location:
+              schema:
+                type: 'string'
+              description: The original URL to redirect to
+        '400':
+          description: Bad request - missing short ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Short URL not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - JwtAuthorizerSouvik: []
+    options:
+      parameters:
+        - name: 'shortId'
+          in: 'path'
+          required: true
+          schema:
+            type: 'string'
+      responses:
+        '200':
+          description: '200 response'
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: 'string'
+            Access-Control-Allow-Methods:
+              schema:
+                type: 'string'
+            Access-Control-Allow-Headers:
+              schema:
+                type: 'string'
+          content: {}
+      security:
+        - JwtAuthorizerSouvik: []
+components:
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: The original URL to be shortened
+          example: 'https://example.com/very/long/url/path'
+    CreateUrlResponse:
+      type: object
+      properties:
+        shortUrl:
+          type: string
+          description: The shortened URL
+          example: 'https://zsj2kfyqed.execute-api.ap-south-1.amazonaws.com/Stage/short/abc123'
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: 'URL is required'
+  securitySchemes:
+    JwtAuthorizerSouvik:
+      type: 'apiKey'
+      name: 'Authorization'
+      in: 'header'
+      x-amazon-apigateway-authtype: 'custom'
+x-amazon-apigateway-security-policy: 'TLS_1_0'
