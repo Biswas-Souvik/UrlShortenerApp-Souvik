@@ -1,8 +1,8 @@
-name: CD - Deploy to AWS (SAM)
+name: Branch-Based Regional Deployment
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
 
 jobs:
   deploy:
@@ -23,6 +23,17 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Set AWS region based on branch
+        run: |
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            echo "AWS_REGION=${{ vars.AWS_REGION_DEV }}" >> $GITHUB_ENV
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            echo "AWS_REGION=${{ vars.AWS_REGION_MAIN }}" >> $GITHUB_ENV
+          else
+            echo "Unsupported branch"
+            exit 1
+          fi
+
       - name: Setup AWS SAM
         uses: aws-actions/setup-sam@v2
 
@@ -31,10 +42,14 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: SAM Build
         run: sam build
 
       - name: SAM Deploy
-        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+        run: |
+          sam deploy \
+            --region $AWS_REGION \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
