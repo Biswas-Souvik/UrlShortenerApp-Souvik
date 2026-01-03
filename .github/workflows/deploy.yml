@@ -42,6 +42,7 @@ jobs:
         run: |
           sam deploy \
             --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-dev" \
+            --resolve-s3 \
             --parameter-overrides JwtSecret=${{ env.JWT_SECRET }} \
               EnvName=${GITHUB_REF##*/} \
             --no-confirm-changeset \
@@ -70,10 +71,9 @@ jobs:
 
       - name: Deploying the Application
         run: |
-          sam deploy \
-            
+          sam deploy \            
             --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-prod" \
-            --resolve-s3\
+            --resolve-s3 \
             --parameter-overrides JwtSecret=${{ env.JWT_SECRET }} \
               EnvName=${GITHUB_REF##*/} \
             --no-confirm-changeset \
