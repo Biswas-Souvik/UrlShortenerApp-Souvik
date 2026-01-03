@@ -2,7 +2,9 @@ name: CI - Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - development
+      - main
 
 jobs:
   test:
