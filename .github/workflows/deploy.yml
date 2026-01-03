@@ -41,6 +41,7 @@ jobs:
       - name: Deploying the Application
         run: |
           sam deploy \
+            --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-dev" \
             --parameter-overrides JwtSecret=${{ env.JWT_SECRET }} \
               EnvName=${GITHUB_REF##*/} \
             --no-confirm-changeset \
@@ -70,6 +71,7 @@ jobs:
       - name: Deploying the Application
         run: |
           sam deploy \
+          --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-prod" \
             --parameter-overrides JwtSecret=${{ env.JWT_SECRET }} \
               EnvName=${GITHUB_REF##*/} \
             --no-confirm-changeset \
