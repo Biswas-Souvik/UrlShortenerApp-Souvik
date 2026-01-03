@@ -73,7 +73,7 @@ jobs:
       - name: Deploying the Application
         run: |
           sam deploy \
-            --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-prod" \
+            --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}" \
             --resolve-s3 \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides JwtSecret=${{ env.JWT_SECRET }} \
