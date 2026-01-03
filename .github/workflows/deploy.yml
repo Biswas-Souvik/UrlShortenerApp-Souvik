@@ -72,7 +72,7 @@ jobs:
 
       - name: Deploying the Application
         run: |
-          sam deploy \            
+          sam deploy \
             --stack-name "Url-Shortener-App-${RESOURCE_NAME_PREFIX}-prod" \
             --resolve-s3 \
             --capabilities CAPABILITY_IAM \
