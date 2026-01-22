@@ -26,13 +26,18 @@ export const getUniqueShortId = (): string => {
 export const createUrlResponse = (
   statusCode: number,
   body: string,
-  headers: UrlResponseHeaders = {}
+  headers: { Location?: string } = {}
 ): UrlResponse => {
-  const output: UrlResponse = { statusCode, body };
-
-  if (headers && 'Location' in headers) {
-    output.headers = headers;
-  }
+  const output: UrlResponse = {
+    statusCode,
+    body,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      'Access-Control-Allow-Methods': 'OPTIONS,GET,POST',
+      ...headers,
+    },
+  };
 
   return output;
 };

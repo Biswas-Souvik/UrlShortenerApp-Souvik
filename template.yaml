@@ -20,7 +20,7 @@ Parameters:
   EnvName:
     Type: String
     Description: 'The Environment Name'
-    Default: development
+    Default: main
 
 Resources:
   UrlShortenerApiSouvik:
@@ -30,6 +30,7 @@ Resources:
       StageName: !Ref EnvName
       Auth:
         DefaultAuthorizer: JwtAuthorizerSouvik
+        AddDefaultAuthorizerToCorsPreflight: false
         Authorizers:
           JwtAuthorizerSouvik:
             FunctionArn: !GetAtt JwtAuthorizerFunctionSouvik.Arn
@@ -39,7 +40,7 @@ Resources:
         Type: REGIONAL
       Cors:
         AllowMethods: "'GET,POST'"
-        AllowHeaders: "'Content-Type'"
+        AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
 
   UrlTableSouvik:
@@ -75,7 +76,7 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: 'es2020'
         Sourcemap: true
         External:
@@ -104,7 +105,7 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: 'es2020'
         Sourcemap: true
         External:
@@ -128,10 +129,12 @@ Resources:
             RestApiId: !Ref UrlShortenerApiSouvik
             Path: /short/{shortId}
             Method: GET
+            Auth:
+              Authorizer: NONE
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: 'es2020'
         Sourcemap: true
         External:
@@ -142,4 +145,4 @@ Resources:
 Outputs:
   ApiUrlSouvik:
     Description: "Base URL for Souvik's API"
-    Value: !Sub 'https://${UrlShortenerApiSouvik}.execute-api.${AWS::Region}.amazonaws.com/test/'
+    Value: !Sub 'https://${UrlShortenerApiSouvik}.execute-api.${AWS::Region}.amazonaws.com/${EnvName}/'

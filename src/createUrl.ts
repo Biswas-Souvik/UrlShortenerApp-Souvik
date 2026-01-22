@@ -13,6 +13,7 @@ import { putItem, getByOriginalUrl } from './utils/db.utils';
 
 export const handler = async (event: ShortUrlEvent) => {
   try {
+    console.log(JSON.stringify(event, null, 2));
     const baseUrl = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
     const body: ShortUrlEventBody = JSON.parse(event.body);
     const originalUrl = body?.url;
